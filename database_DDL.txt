@@ -1,0 +1,36 @@
+create table public.note (
+  id integer primary key not null default nextval('note_id_seq'::regclass), -- The note's unique ID
+  author_id integer not null, -- (FK) Author of the note
+  date_created date not null, -- The date of note's creation
+  symbols integer not null, -- Number of symbols the note has
+  contents text not null, -- The contents of the note
+  title text not null, -- The title of the note
+  foreign key (author_id) references public."user" (id)
+  match simple on update no action on delete no action
+);
+comment on table public.note is 'The table with all of the notes';
+comment on column public.note.id is 'The note''s unique ID';
+comment on column public.note.author_id is '(FK) Author of the note';
+comment on column public.note.date_created is 'The date of note''s creation';
+comment on column public.note.symbols is 'Number of symbols the note has';
+comment on column public.note.contents is 'The contents of the note';
+comment on column public.note.title is 'The title of the note';
+
+create table public."user" (
+  id integer primary key not null default nextval('user_id_seq1'::regclass), -- User's unique ID
+  email text not null, -- Email adress of the user
+  hashed_password text not null, -- The hashed password of the user
+  date_created date not null, -- The date of the user's account creation
+  nickname text not null, -- The nickname of the user
+  pfp_link text -- Link to user's profile picture
+);
+create index user_email_index on "user" using btree (email);
+create unique index user_pk2 on "user" using btree (email);
+comment on table public."user" is 'This is a table that has every application user''s data';
+comment on column public."user".id is 'User''s unique ID';
+comment on column public."user".email is 'Email adress of the user';
+comment on column public."user".hashed_password is 'The hashed password of the user';
+comment on column public."user".date_created is 'The date of the user''s account creation';
+comment on column public."user".nickname is 'The nickname of the user';
+comment on column public."user".pfp_link is 'Link to user''s profile picture';
+
