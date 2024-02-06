@@ -23,16 +23,17 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	config := cors.DefaultConfig()
+	config.AddAllowHeaders("Authorization")
 	config.AllowOrigins = []string{"http://localhost:3000"}
 	router.Use(cors.New(config))
 
 	v1 := router.Group("/api/v1")
 	{
-		v1.GET("/helloworld", handlers.HelloWorld)
+		v1.GET("/account-data", handlers.AccountData(db))
 		v1.POST("/register", handlers.Register(db))
 		v1.POST("/login", handlers.Login(db))
 		v1.POST("/verify-jwt", handlers.VerifyJWT())
-		//v1.POST("/getUserAccountData", handlers.VerifyJWT())
+		v1.POST("/new-post", handlers.NewPost(db))
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

@@ -13,13 +13,17 @@ import (
 // Register is responsible for registering a new user.
 func Register(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var requestJSON api.CredentialsRequest
+		requestJSON := struct {
+			Nickname string `json:"nickname"`
+			Password string `json:"password"`
+		}{}
+
 		if err := c.BindJSON(&requestJSON); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err := db.GetUserByEmail(requestJSON.Email)
+		user, err := db.GetUserByNickname(requestJSON.Nickname)
 		if err != nil {
 			api.HandleInternalServerError(c, err)
 			return
@@ -39,9 +43,8 @@ func Register(db *database.Database) gin.HandlerFunc {
 		}
 
 		newUser := models.User{
-			Email:          requestJSON.Email,
 			HashedPassword: hashedPassword,
-			Nickname:       requestJSON.Email,
+			Nickname:       requestJSON.Nickname,
 			DateCreated:    time.Now(),
 		}
 		err = db.CreateNewUser(newUser)

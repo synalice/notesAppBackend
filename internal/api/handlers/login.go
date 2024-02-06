@@ -12,13 +12,17 @@ import (
 // Login is responsible for authenticating an existing user.
 func Login(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var requestJSON api.CredentialsRequest
+		requestJSON := struct {
+			Nickname string `json:"nickname"`
+			Password string `json:"password"`
+		}{}
+
 		if err := c.BindJSON(&requestJSON); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err := db.GetUserByEmail(requestJSON.Email)
+		user, err := db.GetUserByNickname(requestJSON.Nickname)
 		if err != nil {
 			api.HandleInternalServerError(c, err)
 			return

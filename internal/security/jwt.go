@@ -11,7 +11,6 @@ import (
 )
 
 type JWTClaims struct {
-	HeyThere string `json:"heyThere"`
 	jwt.RegisteredClaims
 }
 
@@ -20,7 +19,6 @@ func GenerateJWTToken(user models.User) (string, error) {
 	id := uuid.New()
 
 	claims := JWTClaims{
-		HeyThere: "Get out of this JWT!",
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "notesAppBackend",
 			Subject:   strconv.Itoa(user.ID),
@@ -38,4 +36,22 @@ func GenerateJWTToken(user models.User) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+func VerifyJWT(token string) (*JWTClaims, error) {
+	t, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Validate the alg is what it has to be.
+		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		if !ok {
+			return nil, fmt.Errorf("VerifyJWT: unexpected signing method: %v", token.Method.Alg())
+		}
+
+		return []byte(secrets.JWTSecret), nil
+	})
+
+	if err != nil || !t.Valid {
+		return nil, fmt.Errorf("VerifyJWT: %w", err)
+	}
+
+	return t.Claims.(*JWTClaims), nil
 }
