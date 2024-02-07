@@ -24,7 +24,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AddAllowHeaders("Authorization")
-	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowOrigins = []string{"http://localhost:3000", "https://syn-dev.ru/"}
 	router.Use(cors.New(config))
 
 	v1 := router.Group("/api/v1")
