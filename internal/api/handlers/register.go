@@ -31,7 +31,7 @@ func Register(db *database.Database) gin.HandlerFunc {
 
 		if user != (models.User{}) {
 			c.JSON(http.StatusConflict, gin.H{
-				"error": "Email is already registered",
+				"error": "Nickname is already registered",
 			})
 			return
 		}
@@ -47,12 +47,13 @@ func Register(db *database.Database) gin.HandlerFunc {
 			Nickname:       requestJSON.Nickname,
 			DateCreated:    time.Now(),
 		}
-		err = db.CreateNewUser(newUser)
+
+		newUser.ID, err = db.CreateNewUser(newUser)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
-		jwtToken, err := security.GenerateJWTToken(user)
+		jwtToken, err := security.GenerateJWTToken(newUser)
 		if err != nil {
 			api.HandleInternalServerError(c, err)
 			return

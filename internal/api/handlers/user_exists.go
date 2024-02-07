@@ -3,12 +3,13 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"notesAppBackend/internal/api"
 	"notesAppBackend/internal/database"
-	"notesAppBackend/internal/models"
 	"strconv"
 )
 
-func AccountData(db *database.Database) gin.HandlerFunc {
+// UserExists returns 200 is user exists and 404 is not.
+func UserExists(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accountIdFromQuery, ok := c.GetQuery("id")
 		if !ok {
@@ -22,17 +23,15 @@ func AccountData(db *database.Database) gin.HandlerFunc {
 			return
 		}
 
-		account, err := db.GetAccountData(accountId)
+		exists, err := db.IsIDPresent(accountId)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+			api.HandleInternalServerError(c, err)
 		}
 
-		if account.User == (models.Account{}.User) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "No such account found"})
-			return
+		if exists {
+			c.Status(http.StatusOK)
+		} else {
+			c.Status(http.StatusNotFound)
 		}
-
-		c.JSON(http.StatusOK, account)
 	}
 }

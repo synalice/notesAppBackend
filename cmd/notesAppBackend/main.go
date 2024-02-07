@@ -30,6 +30,7 @@ func main() {
 	v1 := router.Group("/api/v1")
 	{
 		v1.GET("/account-data", handlers.AccountData(db))
+		v1.GET("/user-exists", handlers.UserExists(db))
 		v1.POST("/register", handlers.Register(db))
 		v1.POST("/login", handlers.Login(db))
 		v1.POST("/verify-jwt", handlers.VerifyJWT())

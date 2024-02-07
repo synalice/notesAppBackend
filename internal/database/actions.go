@@ -30,15 +30,15 @@ func (db *Database) GetUserByNickname(email string) (models.User, error) {
 }
 
 // CreateNewUser is responsible for saving new user to the database.
-func (db *Database) CreateNewUser(user models.User) error {
+func (db *Database) CreateNewUser(user models.User) (newUserID int, err error) {
 	if user == (models.User{}) {
-		return fmt.Errorf("CreateNewUser: user struct empty")
+		return 0, fmt.Errorf("CreateNewUser: user struct empty")
 	}
 
 	// Start the transaction.
 	tx, err := db.connection.Begin()
 	if err != nil {
-		return fmt.Errorf("CreateNewUser: %w", err)
+		return 0, fmt.Errorf("CreateNewUser: %w", err)
 	}
 
 	// Defer a rollback in case anything fails.
@@ -46,23 +46,23 @@ func (db *Database) CreateNewUser(user models.User) error {
 		_ = tx.Rollback()
 	}(tx)
 
-	stmt, err := tx.Prepare(`INSERT INTO "user" (hashed_password, nickname, date_created) VALUES ($1, $2, $3)`)
+	stmt, err := tx.Prepare(`INSERT INTO "user" (hashed_password, nickname, date_created) VALUES ($1, $2, $3) RETURNING id`)
 	if err != nil {
-		return fmt.Errorf("CreateNewUser: %w", err)
+		return 0, fmt.Errorf("CreateNewUser: %w", err)
 	}
 
-	_, err = stmt.Exec(user.HashedPassword, user.Nickname, user.DateCreated)
+	err = stmt.QueryRow(user.HashedPassword, user.Nickname, user.DateCreated).Scan(&newUserID)
 	if err != nil {
-		return fmt.Errorf("CreateNewUser: %w", err)
+		return 0, fmt.Errorf("CreateNewUser: %w", err)
 	}
 
 	// Commit the transaction.
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("CreateNewUser: %w", err)
+		return 0, fmt.Errorf("CreateNewUser: %w", err)
 	}
 
-	return nil
+	return newUserID, nil
 }
 
 func (db *Database) CreateNewPost(authorID int, title, contents string) error {
@@ -133,6 +133,9 @@ func (db *Database) GetAccountData(accountID int) (models.Account, error) {
 
 	err = stmtUser.QueryRow(accountID).Scan(&user.ID, &user.Nickname, &user.DateCreated)
 	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			return models.Account{}, nil
+		}
 		return models.Account{}, fmt.Errorf("GetAccountData: %w", err)
 	}
 
@@ -173,4 +176,22 @@ func (db *Database) GetAccountData(accountID int) (models.Account, error) {
 		Notes:         notes,
 		NumberOfNotes: len(notes),
 	}, nil
+}
+
+func (db *Database) IsIDPresent(accountID int) (bool, error) {
+	stmt, err := db.connection.Prepare(`SELECT id FROM "user" WHERE "user".id = $1`)
+	if err != nil {
+		return false, fmt.Errorf("IsIDPresent: %w", err)
+	}
+
+	var id int
+	err = stmt.QueryRow(accountID).Scan(&id)
+	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("IsIDPresent: %w", err)
+	}
+
+	return true, nil
 }
