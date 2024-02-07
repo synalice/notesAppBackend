@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// TODO: Get password from .env file instead!
-	connStr := "postgres://postgres:pbnppl44@localhost:5432/postgres?sslmode=disable"
+	connStr := "postgres://postgres:pbnppl44@postgres:5432/postgres?sslmode=disable"
 	db, err := database.New(connStr)
 	if err != nil {
 		log.Fatalln(err)
@@ -39,9 +39,7 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	_ = router.Run("localhost:8080")
+	_ = router.Run("0.0.0.0:8080")
 }
 
-// TODO: Package this into Docker.
 // TODO: Do some refactoring.
-// TODO: Database only stores date, but not time
