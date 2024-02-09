@@ -24,6 +24,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AddAllowHeaders("Authorization")
+	// TODO: Somehow remove "http://localhost:3000" in production. It's unsafe.
 	config.AllowOrigins = []string{"http://localhost:3000", "https://syn-dev.ru/"}
 	router.Use(cors.New(config))
 
