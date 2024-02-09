@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
@@ -12,8 +14,12 @@ import (
 )
 
 func main() {
-	// TODO: Get password from .env file instead!
-	connStr := "postgres://postgres:pbnppl44@postgres:5432/postgres?sslmode=disable"
+	envs, err := godotenv.Read()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s sslmode=disable", envs["PG_USER"], envs["PG_PASSWORD"], envs["PG_HOST"], envs["PG_PORT"])
 	db, err := database.New(connStr)
 	if err != nil {
 		log.Fatalln(err)
