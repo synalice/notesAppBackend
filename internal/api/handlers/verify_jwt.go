@@ -18,7 +18,7 @@ func VerifyJWT() gin.HandlerFunc {
 			return
 		}
 
-		_, err := security.VerifyJWT(requestJSON.JWT)
+		_, err := security.VerifyJWTValidity(requestJSON.JWT)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

@@ -38,20 +38,31 @@ func GenerateJWTToken(user models.User) (string, error) {
 	return signedToken, nil
 }
 
-func VerifyJWT(token string) (*JWTClaims, error) {
+// VerifyJWTValidity only checks if the JWT has correct structure, has not been tampered with
+// and is not expired.
+// TODO: Add check for if the token has expired or not.
+func VerifyJWTValidity(token string) (JWTClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Validate the alg is what it has to be.
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			return nil, fmt.Errorf("VerifyJWT: unexpected signing method: %v", token.Method.Alg())
+			return nil, fmt.Errorf("VerifyJWTValidity: unexpected signing method: %v", token.Method.Alg())
 		}
 
 		return []byte(secrets.JWTSecret), nil
 	})
 
 	if err != nil || !t.Valid {
-		return nil, fmt.Errorf("VerifyJWT: %w", err)
+		return JWTClaims{}, fmt.Errorf("VerifyJWTValidity: %w", err)
 	}
 
-	return t.Claims.(*JWTClaims), nil
+	return *t.Claims.(*JWTClaims), nil
+}
+
+func GetSubjectFromJWTClaims(claims JWTClaims) (int, error) {
+	sub, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return 0, fmt.Errorf("GetSubjectFromJWTClaims: %w", err)
+	}
+	return sub, nil
 }

@@ -18,12 +18,12 @@ func NewPost(db *database.Database) gin.HandlerFunc {
 		}{}
 
 		if err := c.BindJSON(&requestJSON); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Can't parse request body"})
 			return
 		}
 
 		jwtToken := strings.Split(c.GetHeader("Authorization"), " ")[1]
-		jwtClaims, err := security.VerifyJWT(jwtToken)
+		jwtClaims, err := security.VerifyJWTValidity(jwtToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

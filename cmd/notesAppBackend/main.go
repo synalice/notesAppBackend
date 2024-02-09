@@ -38,10 +38,16 @@ func main() {
 	{
 		v1.GET("/account-data", handlers.AccountData(db))
 		v1.GET("/user-exists", handlers.UserExists(db))
+
 		v1.POST("/register", handlers.Register(db))
 		v1.POST("/login", handlers.Login(db))
 		v1.POST("/verify-jwt", handlers.VerifyJWT())
-		v1.POST("/new-post", handlers.NewPost(db))
+	}
+
+	post := v1.Group("/post")
+	{
+		post.POST("/new", handlers.NewPost(db))
+		post.DELETE("/:id", handlers.DeleteNote(db))
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
@@ -50,3 +56,5 @@ func main() {
 }
 
 // TODO: Do some refactoring.
+// TODO: Handlers are leaking internal error o the client and don't have sufficient logging. Improve this!
+// TODO: Rename every `post` to `note`.

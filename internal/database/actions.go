@@ -195,3 +195,36 @@ func (db *Database) IsIDPresent(accountID int) (bool, error) {
 
 	return true, nil
 }
+
+func (db *Database) FindNoteByID(noteID int) (models.Note, error) {
+	stmt, err := db.connection.Prepare(`SELECT id, date_created, author_id, contents, symbols, title FROM "note" WHERE "note".id = $1`)
+	if err != nil {
+		return models.Note{}, fmt.Errorf("FindNoteByID: %w", err)
+	}
+
+	var note models.Note
+
+	err = stmt.QueryRow(noteID).Scan(&note.ID, &note.DateCreated, &note.AuthorID, &note.Contents, &note.Symbols, &note.Title)
+	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			return models.Note{}, nil
+		}
+		return models.Note{}, fmt.Errorf("IsIDPresent: %w", err)
+	}
+
+	return note, nil
+}
+
+func (db *Database) DeleteNoteByID(noteID int) error {
+	stmt, err := db.connection.Prepare(`DELETE FROM "note" WHERE "note".id = $1`)
+	if err != nil {
+		return fmt.Errorf("DeleteNoteByID: %w", err)
+	}
+
+	_, err = stmt.Exec(noteID)
+	if err != nil {
+		return fmt.Errorf("DeleteNoteByID: %w", err)
+	}
+
+	return nil
+}
