@@ -23,6 +23,16 @@ func Register(db *database.Database) gin.HandlerFunc {
 			return
 		}
 
+		if requestJSON.Nickname == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "request doesn't contain valid nickname"})
+			return
+		}
+
+		if requestJSON.Password == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "request doesn't contain valid password"})
+			return
+		}
+
 		user, err := db.GetUserByNickname(requestJSON.Nickname)
 		if err != nil {
 			api.HandleInternalServerError(c, err)

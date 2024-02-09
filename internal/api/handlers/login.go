@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"notesAppBackend/internal/api"
@@ -29,7 +30,9 @@ func Login(db *database.Database) gin.HandlerFunc {
 		}
 
 		if user == (models.User{}) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User isn't found"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("User with name %s isn't found", requestJSON.Nickname),
+			})
 			return
 		}
 
