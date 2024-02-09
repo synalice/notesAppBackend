@@ -11,15 +11,16 @@ import (
 	"notesAppBackend/docs"
 	"notesAppBackend/internal/api/handlers"
 	"notesAppBackend/internal/database"
+	"os"
 )
 
 func main() {
-	envs, err := godotenv.Read()
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s sslmode=disable", envs["PG_USER"], envs["PG_PASSWORD"], envs["PG_HOST"], envs["PG_PORT"])
+	connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s sslmode=disable", os.Getenv("PG_USER"), os.Getenv("PG_PASSWORD"), os.Getenv("PG_HOST"), os.Getenv("PG_PORT"))
 	db, err := database.New(connStr)
 	if err != nil {
 		log.Fatalln(err)
